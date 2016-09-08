@@ -1,8 +1,10 @@
 'use strict';
 
-class SphericalMapLMShader extends BaseShader {
-    fillCode() {
-        this.vertexShaderCode = 'precision highp float;\r\n' +
+define(['baseShader'], function(BaseShader) {
+
+    class SphericalMapLMShader extends BaseShader {
+        fillCode() {
+            this.vertexShaderCode = 'precision highp float;\r\n' +
                 'uniform mat4 view_proj_matrix;\r\n' +
                 'uniform mat4 view_matrix;\r\n' +
                 '\r\n' +
@@ -25,7 +27,7 @@ class SphericalMapLMShader extends BaseShader {
                 '   vNormal = (view_matrix * vec4(rm_Normal, 0.0)).xyz;\r\n' +
                 '}';
 
-        this.fragmentShaderCode = 'precision highp float;\r\n' +
+            this.fragmentShaderCode = 'precision highp float;\r\n' +
                 'uniform sampler2D normalMap;\r\n' +
                 'uniform sampler2D sphereMap;\r\n' +
                 'uniform sampler2D aoMap;\r\n' +
@@ -53,17 +55,20 @@ class SphericalMapLMShader extends BaseShader {
                 '     \r\n' +
                 '   gl_FragColor = sphereColor * normColor.b;\r\n' +
                 '}';
+        }
+
+        fillUniformsAttributes() {
+            this.view_proj_matrix = this.getUniform('view_proj_matrix');
+            this.view_matrix = this.getUniform('view_matrix');
+            this.rm_Vertex = this.getAttrib('rm_Vertex');
+            this.rm_TexCoord0 = this.getAttrib('rm_TexCoord0');
+            this.rm_TexCoord1 = this.getAttrib('rm_TexCoord1');
+            this.rm_Normal = this.getAttrib('rm_Normal');
+            this.normalMap = this.getUniform('normalMap');
+            this.sphereMap = this.getUniform('sphereMap');
+            this.aoMap = this.getUniform('aoMap');
+        }
     }
 
-    fillUniformsAttributes() {
-        this.view_proj_matrix = this.getUniform('view_proj_matrix');
-        this.view_matrix = this.getUniform('view_matrix');
-        this.rm_Vertex = this.getAttrib('rm_Vertex');
-        this.rm_TexCoord0 = this.getAttrib('rm_TexCoord0');
-        this.rm_TexCoord1 = this.getAttrib('rm_TexCoord1');
-        this.rm_Normal = this.getAttrib('rm_Normal');
-        this.normalMap = this.getUniform('normalMap');
-        this.sphereMap = this.getUniform('sphereMap');
-        this.aoMap = this.getUniform('aoMap');
-    }
-}
+    return SphericalMapLMShader;
+});
