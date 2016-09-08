@@ -5,7 +5,8 @@ define([
         'lMTableShader',
         'vignetteData',
         'utils/matrixUtils',
-        'fullModel'
+        'fullModel',
+        'uncompressedTextureLoader',
     ],
     function(
         $,
@@ -14,7 +15,8 @@ define([
         LMTableShader,
         VignetteData,
         MatrixUtils,
-        FullModel) {
+        FullModel,
+        UncompressedTextureLoader) {
 
         var
             shaderSphericalMapLM,
@@ -69,7 +71,6 @@ define([
         }
 
         function initShaders() {
-            // shaderTest = new TestShader();
             shaderDiffuse = new DiffuseShader();
             shaderSphericalMapLM = new SphericalMapLMShader();
             shaderLMTable = new LMTableShader();
@@ -93,40 +94,15 @@ define([
             }
         }
 
-        function handleLoadedTexture(texture) {
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.bindTexture(gl.TEXTURE_2D, null);
-            if (texture.image && texture.image.src) {
-                console.log('Loaded texture ' + texture.image.src);
-            }
-        }
-
-        function loadUncompressedTexture(url, callback) {
-            var texture = gl.createTexture();
-
-            texture.image = new Image();
-            texture.image.src = url;
-            texture.image.onload = function() {
-                handleLoadedTexture(texture);
-                callback && callback();
-            };
-
-            return texture;
-        }
-
         function loadData() {
-            textureCoinsNormalMap = loadUncompressedTexture('data/textures/faces/coin' + coinNormalType + '_normal.png', updateLoadedObjectsCount);
-            textureSphericalMap = loadUncompressedTexture('data/textures/spheres/sphere_' + coinSphericalMap + '.png', updateLoadedObjectsCount);
-            textureCoinsLightMap = loadUncompressedTexture('data/textures/coin' + coinModelType + '_lm.png', updateLoadedObjectsCount);
-            textureTable = loadUncompressedTexture('data/textures/table/' + tableTextureType + '.png', updateLoadedObjectsCount);
-            textureTableLM = loadUncompressedTexture('data/textures/table/table_lm_coin' + coinModelType + '.png', updateLoadedObjectsCount);
+            textureCoinsNormalMap = UncompressedTextureLoader.load('data/textures/faces/coin' + coinNormalType + '_normal.png', updateLoadedObjectsCount);
+            textureSphericalMap = UncompressedTextureLoader.load('data/textures/spheres/sphere_' + coinSphericalMap + '.png', updateLoadedObjectsCount);
+            textureCoinsLightMap = UncompressedTextureLoader.load('data/textures/coin' + coinModelType + '_lm.png', updateLoadedObjectsCount);
+            textureTable = UncompressedTextureLoader.load('data/textures/table/' + tableTextureType + '.png', updateLoadedObjectsCount);
+            textureTableLM = UncompressedTextureLoader.load('data/textures/table/table_lm_coin' + coinModelType + '.png', updateLoadedObjectsCount);
 
             vignette = new VignetteData();
             vignette.initGL(gl);
-            logGLError();
 
             mMMatrix = MatrixUtils.mat4.create();
             mVMatrix = MatrixUtils.mat4.create();
@@ -328,9 +304,6 @@ define([
             gl.drawElements(gl.TRIANGLES, model.getNumIndices() * 3, gl.UNSIGNED_SHORT, 0);
         }
 
-        /**
-         * Provides requestAnimationFrame in a cross browser way.
-         */
         window.requestAnimFrame = (function() {
             return window.requestAnimationFrame ||
                 window.webkitRequestAnimationFrame ||
