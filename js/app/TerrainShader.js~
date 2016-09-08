@@ -1,0 +1,42 @@
+'use strict';
+
+class TerrainShader extends BaseShader {
+    fillCode() {
+        this.vertexShaderCode = "precision highp float;\r\n" +
+            "attribute vec4 rm_Vertex;\r\n" +
+            "\r\n" +
+            "uniform mat4 view_proj_matrix;\r\n" +
+            "uniform float mixDist;\r\n" +
+            "\r\n" +
+            "uniform vec4 color3;\r\n" +
+            "uniform vec4 color1;\r\n" +
+            "\r\n" +
+            "varying vec4 vColor;\r\n" +
+            "varying float vDist;\r\n" +
+            "\r\n" +
+            "void main( void )\r\n" +
+            "{\r\n" +
+            "    gl_Position = view_proj_matrix * rm_Vertex;\r\n" +
+            "    vDist = (view_proj_matrix * rm_Vertex).w;\r\n" +
+            "\r\n" +
+            "    vColor = mix(color3, color1, clamp(vDist / mixDist, 0.0, 1.0));\r\n" +
+            "}";
+
+        this.fragmentShaderCode = "precision highp float;\r\n" +
+            "\r\n" +
+            "uniform vec4 color2;\r\n" +
+            "uniform float distance1;\r\n" +
+            "uniform float distance2;\r\n" +
+            "\r\n" +
+            "varying vec4 vColor;\r\n" +
+            "varying float vDist;\r\n" +
+            "\r\n" +
+            "void main( void )\r\n" +
+            "{\r\n" +
+            "    float s = step(distance1, vDist)\r\n" +
+            "      * (1.0 - step(distance2, vDist));\r\n" +
+            "\r\n" +
+            "    gl_FragColor = mix(vColor, color2, s);\r\n" +
+            "}";
+    }
+}

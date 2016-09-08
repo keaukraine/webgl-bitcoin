@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bitcoin WebGL demo</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    <link rel="stylesheet" href="styles/css/site.css">
+
+    <style>
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- <h1>Magic Internet Money</h1> -->
+
+        <div class="row" id="row-progress">
+            <h3 class="text-center">Loading...</h3>
+            <div class="col col-sm-8 col-sm-push-2">
+                <div class="progress">
+                  <div id="progressLoading" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 0">
+                    0%
+                  </div>
+                </div>
+            </div>
+        </div>
+        <p class="text-center">
+            <canvas id="canvasGL" width="640" height="360" class="canvasGL">
+                Your browser doesn't appear to support the
+                <code>&lt;canvas&gt;</code> element.
+            </canvas>
+        </p>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script src="js/app/utils/gl-matrix-2.2.1.js"></script>
+    <script type="text/javascript" src="js/app/utils/webgl-utils.js"></script>
+    <script src="js/app/BaseShader.js"></script>
+    <script src="js/app/TestShader.js"></script>
+    <script src="js/app/SphericalMapLMShader.js"></script>
+    <script src="js/app/LMTableShader.js"></script>
+    <script src="js/app/DiffuseShader.js"></script>
+    <script src="js/app/BinaryDataLoader.js"></script>
+    <script src="js/app/VignetteData.js"></script>
+    <script src="js/app/FullModel.js"></script>
+
+    <script type="text/javascript">
+    var gl,
+        shaderTest,
+        shaderSphericalMapLM,
+        shaderDiffuse,
+        shaderLMTable,
+        vignette,
+        textureCoinsNormalMap, textureSphericalMap, textureCoinsLightMap, textureTable, textureTableLM,
+        loadedItemsCount = 0,
+        loaded = false,
+        loader,
+        matOrtho,
+        matView,
+        mMMatrix, mVMatrix, mMVPMatrix, mProjMatrix,
+        modelTable, modelCoins,
+        angleYaw = 0,
+        lastTime = 0;
+
+    var coinModelType = '1', // 1, 2, 3
+        coinNormalType = '1', // 1, 2, 3
+        coinSphericalMap = 'gold2', // 'bronze', 'gold2', 'silver'
+        tableTextureType = 'marble'; // 'granite', 'marble', 'wood3'
+
+    var ITEMS_TO_LOAD = 7;
+    var FLOAT_SIZE_BYTES = 4;
+    var TRIANGLE_VERTICES_DATA_STRIDE_BYTES = 5 * FLOAT_SIZE_BYTES;
+    var TRIANGLE_VERTICES_DATA_POS_OFFSET = 0;
+    var TRIANGLE_VERTICES_DATA_UV_OFFSET = 3;
+    var FOV_LANDSCAPE = 25.0;
+    var FOV_PORTRAIT = 40.0;
+    var YAW_COEFF_NORMAL = 150.0;
+
+    function updateLoadedObjectsCount() {
+        var percent,
+            $progress = $('#progressLoading');
+
+        loadedItemsCount++;
+
+        percent = Math.floor(loadedItemsCount * 100 / ITEMS_TO_LOAD) + '%';
+        $progress
+            .css('width', percent)
+            .html(percent);
+
+        if(loadedItemsCount >= ITEMS_TO_LOAD) {
+            loaded = true;
+            console.log('Loaded all assets');
+            $('#row-progress').hide();
+        }
+    }
+
+    function handleLoadedTexture(texture) {
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        if(texture.image && texture.image.src) {
+            console.log('Loaded texture ' + texture.image.src);
+        }
+    }
+
+    function loadUncompressedTexture(url, callback) {
+        var texture = gl.createTexture();
+
+        texture.image = new Image();
+        texture.image.src = url;
+        texture.image.onload = function () {
+            handleLoadedTexture(texture);
+            callback && callback();
+        };
+
+        return texture;
+    }
+
+    function loadData() {
+        textureCoinsNormalMap = loadUncompressedTexture('data/textures/faces/coin' + coinNormalType + '_normal.png',  updateLoadedObjectsCount);
+        textureSphericalMap = loadUncompressedTexture('data/textures/spheres/sphere_' + coinSphericalMap + '.png',  updateLoadedObjectsCount);
+        textureCoinsLightMap = loadUncompressedTexture('data/textures/coin' + coinModelType + '_lm.png', updateLoadedObjectsCount);
+        textureTable = loadUncompressedTexture('data/textures/table/' + tableTextureType + '.png', updateLoadedObjectsCount);
+        textureTableLM = loadUncompressedTexture('data/textures/table/table_lm_coin' + coinModelType + '.png', updateLoadedObjectsCount);
+
+        vignette = new VignetteData();
+        vignette.initGL(gl);
+        logGLError();
+
+        mMMatrix = mat4.create();
+        mVMatrix = mat4.create();
+        mMVPMatrix = mat4.create();
+        mProjMatrix = mat4.create();
+
+        matView = mat4.create();
+        matOrtho = mat4.create();
+        mat4.ortho(matOrtho, -1, 1, -1, 1, 2.0, 250);
+
+        modelTable = new FullModel();
+        modelTable.load('data/models/table', updateLoadedObjectsCount);
+        modelCoins = new FullModel();
+        modelCoins.load('data/models/coins' + coinModelType, updateLoadedObjectsCount);
+    }
+
+    function logGLError() {
+        var err = gl.getError();
+        if(err !== gl.NO_ERROR) {
+            console.warn('WebGL error #' + err);
+        }
+    }
+
+    function initGL(canvas) {
+        var gl = null;
+
+        try {
+            gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            gl.viewportWidth = canvas.width;
+            gl.viewportHeight = canvas.height;
+        } catch (e) {
+        }
+        if (!gl) {
+            console.warn('Could not initialise WebGL');
+        }
+
+        return gl;
+    }
+
+    function initShaders() {
+        shaderTest = new TestShader();
+        shaderDiffuse = new DiffuseShader();
+        shaderSphericalMapLM = new SphericalMapLMShader();
+        shaderLMTable = new LMTableShader();
+    }
+
+    var mvMatrixTest = mat4.create();
+    var pMatrixTest = mat4.create();
+
+    function setMatrixUniforms() {
+        gl.uniformMatrix4fv(shaderTest.pMatrixUniform, false, pMatrixTest);
+        gl.uniformMatrix4fv(shaderTest.mvMatrixUniform, false, mvMatrixTest);
+    }
+
+    var triangleVertexPositionBuffer;
+    var squareVertexPositionBuffer;
+
+    function initBuffers() {
+        triangleVertexPositionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
+        var vertices = [
+             0.0,  1.0,  0.0,
+            -1.0, -1.0,  0.0,
+             1.0, -1.0,  0.0
+        ];
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+        triangleVertexPositionBuffer.itemSize = 3;
+        triangleVertexPositionBuffer.numItems = 3;
+
+        squareVertexPositionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
+        vertices = [
+             1.0,  1.0,  0.0,
+            -1.0,  1.0,  0.0,
+             1.0, -1.0,  0.0,
+            -1.0, -1.0,  0.0
+        ];
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+        squareVertexPositionBuffer.itemSize = 3;
+        squareVertexPositionBuffer.numItems = 4;
+    }
+
+    function setTexture2D(textureUnit, textureID, uniformID) {
+        gl.activeTexture(gl.TEXTURE0 + textureUnit);
+        gl.bindTexture(gl.TEXTURE_2D, textureID);
+        gl.uniform1i(uniformID, textureUnit);
+    }
+
+    function setTextureCubemap(textureUnit, textureID, uniformID) {
+        gl.ActiveTexture(gl.TEXTURE0 + textureUnit);
+        gl.BindTexture(gl.TEXTURE_CUBE_MAP, textureID);
+        gl.Uniform1i(uniformID, textureUnit);
+    }
+
+    function positionCamera(a) {
+        var pointCameraPosition = {}; // FIXME
+        var z = 0; // FIXME
+
+        z = (Math.sin(a * 6.2831852) * 100.0) + 200.0;
+
+        pointCameraPosition.x = 0;
+        pointCameraPosition.y = 0;
+        pointCameraPosition.z = z;
+
+        var sina = Math.sin(angleYaw / 360.0 * 6.2831852);
+        var cosa = Math.cos(angleYaw / 360.0 * 6.2831852);
+
+        pointCameraPosition.x = sina * 180.0;
+        pointCameraPosition.y = cosa * 180.0;
+
+        mat4.identity(matView);
+        mat4.lookAt(matView,
+            [pointCameraPosition.x, pointCameraPosition.y, pointCameraPosition.z],
+            [0, 0, 0],
+            [0, 0, 1]);
+
+        mat4.identity(mVMatrix);
+        mat4.lookAt(mVMatrix,
+            [pointCameraPosition.x, pointCameraPosition.y, pointCameraPosition.z],
+            [0, 0, 0],
+            [0, 0, 1]);
+    }
+
+    function setCameraFOV(multiplier) {
+        var ratio;
+
+        if (gl.viewportHeight > 0) {
+            ratio = gl.viewportWidth / gl.viewportHeight;
+        } else {
+            ratio = 1.0;
+        }
+
+        if (gl.viewportWidth >= gl.viewportHeight) {
+            setFOV(mProjMatrix, FOV_LANDSCAPE * multiplier, ratio, 20.0, 1000.0);
+        } else {
+            setFOV(mProjMatrix, FOV_PORTRAIT * multiplier, ratio, 20.0, 1000.0);
+        }
+    }
+
+    function setFOV(matrix, fovY, aspect, zNear, zFar) {
+        var fW, fH;
+        fH = Math.tan(fovY / 360.0 * 3.1415926) * zNear;
+        fW = fH * aspect;
+        mat4.frustum(matrix, -fW, fW, -fH, fH, zNear, zFar);
+    }
+
+    function drawScene() {
+        if(!loaded) {
+            return;
+        }
+
+        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+        // gl.clearColor(Math.random(), Math.random(), Math.random(), 1.0);
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        gl.enable(gl.DEPTH_TEST);
+
+        // drawTest();
+
+        // gl.disable(gl.DEPTH_TEST);
+        // gl.disable(gl.CULL_FACE);
+
+        // drawVignette(textureCoinsNormalMap);
+
+        positionCamera(0.0);
+        setCameraFOV(1); // FIXME investigate wht FOV is so strange
+
+        drawTable();
+        drawCoins();
+    }
+
+    function calculateMVPMatrix(tx, ty, tz, rx, ry, rz, sx, sy, sz) {
+        // Matrix.setIdentityM(mMMatrix, 0);
+        // Matrix.setRotateM(mMMatrix, 0, 0, 1.0f, 0, 0);
+        // rotateMatrix(mMMatrix, 0, 0, 0, 1.0f, 0);
+        // Matrix.translateM(mMMatrix, 0, tx, ty, tz);
+        // Matrix.scaleM(mMMatrix, 0, sx, sy, sz);
+        // rotateMatrix(mMMatrix, 0, rx, 1.0f, 0, 0);
+        // rotateMatrix(mMMatrix, 0, ry, 0, 1.0f, 0);
+        // rotateMatrix(mMMatrix, 0, rz, 0, 0, 1.0f);
+        // Matrix.multiplyMM(mMVPMatrix, 0, mVMatrix, 0, mMMatrix, 0);
+        // Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mMVPMatrix, 0);
+
+        mat4.identity(mMMatrix);
+        mat4.rotate(mMMatrix, mMMatrix, 0, [1, 0, 0]);
+        // rotateMatrix(mMMatrix, 0, 0, 0, 1.0f, 0);
+        mat4.translate(mMMatrix, mMMatrix, [tx, ty, tz]);
+        mat4.scale(mMMatrix, mMMatrix, [sx, sy, sz]);
+        mat4.rotateX(mMMatrix, mMMatrix, rx);
+        mat4.rotateY(mMMatrix, mMMatrix, ry);
+        mat4.rotateZ(mMMatrix, mMMatrix, rz);
+        mat4.multiply(mMVPMatrix, mVMatrix, mMMatrix);
+        mat4.multiply(mMVPMatrix, mProjMatrix, mMVPMatrix);
+    }
+
+    function drawTest() {
+        shaderTest.use();
+
+        mat4.perspective (pMatrix, 45.0, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
+
+        mat4.identity(mvMatrixTest);
+
+        mat4.translate(mvMatrixTest, mvMatrixTest, [-1.5, 0.0, -5.4]);
+        gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
+        gl.enableVertexAttribArray(shaderTest.vertexPositionAttribute);
+        gl.vertexAttribPointer(shaderTest.vertexPositionAttribute, triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        setMatrixUniforms();
+        gl.drawArrays(gl.TRIANGLES, 0, triangleVertexPositionBuffer.numItems);
+
+        mat4.translate(mvMatrixTest, mvMatrixTest, [3.0, 0.0, 0.0]);
+        gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
+        gl.vertexAttribPointer(shaderTest.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        setMatrixUniforms();
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems);
+    }
+
+    function drawVignette(texture) {
+        shaderDiffuse.use();
+
+        setTexture2D(0, texture, shaderDiffuse.sTexture);
+
+        mat4.ortho(matOrtho, -1, 1, -1, 1, 2.0, 250);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, vignette.buffer);
+
+        gl.vertexAttribPointer(shaderDiffuse.rm_Vertex, 3, gl.FLOAT, false, TRIANGLE_VERTICES_DATA_STRIDE_BYTES, TRIANGLE_VERTICES_DATA_POS_OFFSET * FLOAT_SIZE_BYTES);
+        gl.enableVertexAttribArray(shaderDiffuse.rm_Vertex);
+
+        gl.vertexAttribPointer(shaderDiffuse.rm_TexCoord0, 2, gl.FLOAT, false, TRIANGLE_VERTICES_DATA_STRIDE_BYTES, TRIANGLE_VERTICES_DATA_UV_OFFSET * FLOAT_SIZE_BYTES);
+        gl.enableVertexAttribArray(shaderDiffuse.rm_TexCoord0);
+
+        gl.uniformMatrix4fv(shaderDiffuse.view_proj_matrix, false, matOrtho);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+
+    function drawTable() {
+        shaderLMTable.use();
+
+        setTexture2D(0, textureTable, shaderLMTable.sTexture);
+        setTexture2D(1, textureTableLM, shaderLMTable.sLM);
+        gl.uniform1f(shaderLMTable.diffuseScale, 8.0);
+        drawLMVBOTranslatedRotatedScaled(shaderLMTable, modelTable, 0, 0, 0, 0, 0, 0, 1, 1, 1);
+    }
+
+    function drawCoins() {
+        shaderSphericalMapLM.use();
+
+        setTexture2D(0, textureCoinsNormalMap, shaderSphericalMapLM.normalMap);
+        setTexture2D(1, textureSphericalMap, shaderSphericalMapLM.sphereMap);
+        setTexture2D(2, textureCoinsLightMap, shaderSphericalMapLM.aoMap);
+        drawCoinVBOTranslatedRotatedScaled(shaderSphericalMapLM, modelCoins, 0, 0, 0, 0, 0, 0, 1, 1, 1);
+    }
+
+    function drawCoinVBOTranslatedRotatedScaled(shader, model, tx, ty, tz, rx, ry, rz, sx, sy, sz) {
+        model.bindBuffers();
+
+        gl.enableVertexAttribArray(shader.rm_Vertex);
+        gl.enableVertexAttribArray(shader.rm_TexCoord0);
+        gl.enableVertexAttribArray(shader.rm_TexCoord1);
+        gl.enableVertexAttribArray(shader.rm_Normal);
+
+        gl.vertexAttribPointer(shader.rm_Vertex, 3, gl.FLOAT, false, 4 * (3 + 2 + 2 + 3), 0);
+        gl.vertexAttribPointer(shader.rm_TexCoord0, 2, gl.FLOAT, false, 4 * (3 + 2 + 2 + 3), 4 * (3));
+        gl.vertexAttribPointer(shader.rm_TexCoord1, 2, gl.FLOAT, false, 4 * (3 + 2 + 2 + 3), 4 * (3 + 2));
+        gl.vertexAttribPointer(shader.rm_Normal, 3, gl.FLOAT, false, 4 * (3 + 2 + 2 + 3), 4 * (3 + 2 + 2));
+
+        calculateMVPMatrix(tx, ty, tz, rx, ry, rz, sx, sy, sz);
+
+        gl.uniformMatrix4fv(shader.view_matrix, false, mVMatrix);
+        gl.uniformMatrix4fv(shader.view_proj_matrix, false, mMVPMatrix);
+        gl.drawElements(gl.TRIANGLES, model.getNumIndices() * 3, gl.UNSIGNED_SHORT, 0);
+    }
+
+    function drawLMVBOTranslatedRotatedScaled(shader, model, tx, ty, tz, rx, ry, rz, sx, sy, sz) {
+        model.bindBuffers();
+
+        gl.enableVertexAttribArray(shader.rm_Vertex);
+        gl.enableVertexAttribArray(shader.rm_TexCoord0);
+        gl.enableVertexAttribArray(shader.rm_TexCoord1);
+
+        gl.vertexAttribPointer(shader.rm_Vertex, 3, gl.FLOAT, false, 4 * (3 + 2 + 2), 0);
+        gl.vertexAttribPointer(shader.rm_TexCoord0, 2, gl.FLOAT, false, 4 * (3 + 2 + 2), 4 * (3));
+        gl.vertexAttribPointer(shader.rm_TexCoord1, 2, gl.FLOAT, false, 4 * (3 + 2 + 2), 4 * (3 + 2));
+
+        calculateMVPMatrix(tx, ty, tz, rx, ry, rz, sx, sy, sz);
+
+        gl.uniformMatrix4fv(shader.view_proj_matrix, false, mMVPMatrix);
+        gl.drawElements(gl.TRIANGLES, model.getNumIndices() * 3, gl.UNSIGNED_SHORT, 0);
+    }
+
+    function tick() {
+        requestAnimFrame(tick);
+        drawScene();
+        animate();
+    }
+
+    function animate() {
+        var timeNow = new Date().getTime(),
+            elapsed;
+
+        if (lastTime != 0) {
+            elapsed = timeNow - lastTime;
+
+            angleYaw += elapsed / YAW_COEFF_NORMAL;
+            angleYaw %= 360.0;
+        }
+
+        lastTime = timeNow;
+    }
+
+    $(function() {
+        var canvas = document.getElementById('canvasGL');
+
+        gl = initGL(canvas);
+
+        loadData();
+
+        initShaders();
+        initBuffers();
+
+        tick();
+    });
+    </script>
+</body>
+
+</html>
