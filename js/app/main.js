@@ -7,6 +7,7 @@ define([
         'utils/matrixUtils',
         'fullModel',
         'uncompressedTextureLoader',
+        'compressedTextureLoader'
     ],
     function(
         $,
@@ -16,7 +17,8 @@ define([
         VignetteData,
         MatrixUtils,
         FullModel,
-        UncompressedTextureLoader) {
+        UncompressedTextureLoader,
+        CompressedTextureLoader) {
 
         var
             shaderSphericalMapLM,
@@ -32,7 +34,8 @@ define([
             mMMatrix, mVMatrix, mMVPMatrix, mProjMatrix,
             modelTable, modelCoins,
             angleYaw = 0,
-            lastTime = 0;
+            lastTime = 0,
+            isETC1Supported;
 
         var coinModelType = '1', // 1, 2, 3
             coinNormalType = '1', // 1, 2, 3
@@ -55,6 +58,7 @@ define([
                 gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
                 gl.viewportWidth = canvas.width;
                 gl.viewportHeight = canvas.height;
+                isETC1Supported = !!gl.getExtension('WEBGL_compressed_texture_etc1');
             } catch (e) {}
             if (!gl) {
                 console.warn('Could not initialise WebGL');
@@ -94,12 +98,22 @@ define([
             }
         }
 
+        function loadETC1WithFallback(url) {
+            if(isETC1Supported) {
+                return CompressedTextureLoader.loadETC1(url + '.pkm', updateLoadedObjectsCount);
+            } else {
+                return UncompressedTextureLoader.load(url + '.png', updateLoadedObjectsCount);
+            }
+        }
+
         function loadData() {
             textureCoinsNormalMap = UncompressedTextureLoader.load('data/textures/faces/coin' + coinNormalType + '_normal.png', updateLoadedObjectsCount);
             textureSphericalMap = UncompressedTextureLoader.load('data/textures/spheres/sphere_' + coinSphericalMap + '.png', updateLoadedObjectsCount);
-            textureCoinsLightMap = UncompressedTextureLoader.load('data/textures/coin' + coinModelType + '_lm.png', updateLoadedObjectsCount);
             textureTable = UncompressedTextureLoader.load('data/textures/table/' + tableTextureType + '.png', updateLoadedObjectsCount);
-            textureTableLM = UncompressedTextureLoader.load('data/textures/table/table_lm_coin' + coinModelType + '.png', updateLoadedObjectsCount);
+
+            textureCoinsLightMap = loadETC1WithFallback('data/textures/coin' + coinModelType + '_lm');
+            textureTable = loadETC1WithFallback('data/textures/table/' + tableTextureType);
+            textureTableLM = loadETC1WithFallback('data/textures/table/table_lm_coin' + coinModelType);
 
             vignette = new VignetteData();
             vignette.initGL(gl);
@@ -191,7 +205,7 @@ define([
             gl.cullFace(gl.BACK);
 
             positionCamera(0.0);
-            setCameraFOV(1); // FIXME investigate wht FOV is so strange
+            setCameraFOV(1);
 
             drawTable();
             drawCoins();
