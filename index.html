@@ -15,8 +15,6 @@
 
 <body>
     <div class="container">
-        <!-- <h1>Magic Internet Money</h1> -->
-
         <div class="row" id="row-progress">
             <h3 class="text-center">Loading...</h3>
             <div class="col col-sm-8 col-sm-push-2">
@@ -27,12 +25,15 @@
                 </div>
             </div>
         </div>
-        <p class="text-center">
-            <canvas id="canvasGL" width="640" height="360" class="canvasGL">
+        <div class="text-center">
+            <canvas id="canvasGL" width="640" height="360" class="canvasGL" style="display:none;">
                 Your browser doesn't appear to support the
                 <code>&lt;canvas&gt;</code> element.
             </canvas>
-        </p>
+            <div class="alert alert-danger" role="alert" id="alertError" style="display:none;">
+                Cannot initialize WebGL context.
+            </div>
+        </div>
     </div>
 
     <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script> -->

@@ -21,16 +21,13 @@ define([
         CompressedTextureLoader) {
 
         var
-            shaderSphericalMapLM,
-            shaderDiffuse,
-            shaderLMTable,
+            shaderSphericalMapLM, shaderDiffuse, shaderLMTable,
             vignette,
             textureCoinsNormalMap, textureSphericalMap, textureCoinsLightMap, textureTable, textureTableLM,
             loadedItemsCount = 0,
             loaded = false,
             loader,
             matOrtho,
-            matView,
             mMMatrix, mVMatrix, mMVPMatrix, mProjMatrix,
             modelTable, modelCoins,
             angleYaw = 0,
@@ -99,7 +96,7 @@ define([
         }
 
         function loadETC1WithFallback(url) {
-            if(isETC1Supported) {
+            if (isETC1Supported) {
                 return CompressedTextureLoader.loadETC1(url + '.pkm', updateLoadedObjectsCount);
             } else {
                 return UncompressedTextureLoader.load(url + '.png', updateLoadedObjectsCount);
@@ -109,8 +106,6 @@ define([
         function loadData() {
             textureCoinsNormalMap = UncompressedTextureLoader.load('data/textures/faces/coin' + coinNormalType + '_normal.png', updateLoadedObjectsCount);
             textureSphericalMap = UncompressedTextureLoader.load('data/textures/spheres/sphere_' + coinSphericalMap + '.png', updateLoadedObjectsCount);
-            textureTable = UncompressedTextureLoader.load('data/textures/table/' + tableTextureType + '.png', updateLoadedObjectsCount);
-
             textureCoinsLightMap = loadETC1WithFallback('data/textures/coin' + coinModelType + '_lm');
             textureTable = loadETC1WithFallback('data/textures/table/' + tableTextureType);
             textureTableLM = loadETC1WithFallback('data/textures/table/table_lm_coin' + coinModelType);
@@ -123,7 +118,6 @@ define([
             mMVPMatrix = MatrixUtils.mat4.create();
             mProjMatrix = MatrixUtils.mat4.create();
 
-            matView = MatrixUtils.mat4.create();
             matOrtho = MatrixUtils.mat4.create();
             MatrixUtils.mat4.ortho(matOrtho, -1, 1, -1, 1, 2.0, 250);
 
@@ -146,26 +140,19 @@ define([
         }
 
         function positionCamera(a) {
-            var pointCameraPosition = {}; // FIXME
-            var z = 0; // FIXME
+            var x, y, z,
+                sina, cosa;
 
+            x = 0;
+            y = 0;
             z = (Math.sin(a * 6.2831852) * 100.0) + 200.0;
-
-            pointCameraPosition.x = 0;
-            pointCameraPosition.y = 0;
-            pointCameraPosition.z = z;
-
-            var sina = Math.sin(angleYaw / 360.0 * 6.2831852);
-            var cosa = Math.cos(angleYaw / 360.0 * 6.2831852);
-
-            pointCameraPosition.x = sina * 180.0;
-            pointCameraPosition.y = cosa * 180.0;
-
-            MatrixUtils.mat4.identity(matView);
-            MatrixUtils.mat4.lookAt(matView, [pointCameraPosition.x, pointCameraPosition.y, pointCameraPosition.z], [0, 0, 0], [0, 0, 1]);
+            sina = Math.sin(angleYaw / 360.0 * 6.2831852);
+            cosa = Math.cos(angleYaw / 360.0 * 6.2831852);
+            x = sina * 180.0;
+            y = cosa * 180.0;
 
             MatrixUtils.mat4.identity(mVMatrix);
-            MatrixUtils.mat4.lookAt(mVMatrix, [pointCameraPosition.x, pointCameraPosition.y, pointCameraPosition.z], [0, 0, 0], [0, 0, 1]);
+            MatrixUtils.mat4.lookAt(mVMatrix, [x, y, z], [0, 0, 0], [0, 0, 1]);
         }
 
         function setCameraFOV(multiplier) {
@@ -186,6 +173,7 @@ define([
 
         function setFOV(matrix, fovY, aspect, zNear, zFar) {
             var fW, fH;
+
             fH = Math.tan(fovY / 360.0 * 3.1415926) * zNear;
             fW = fH * aspect;
             MatrixUtils.mat4.frustum(matrix, -fW, fW, -fH, fH, zNear, zFar);
@@ -205,7 +193,7 @@ define([
             gl.cullFace(gl.BACK);
 
             positionCamera(0.0);
-            setCameraFOV(1);
+            setCameraFOV(1.0);
 
             drawTable();
             drawCoins();
@@ -221,27 +209,6 @@ define([
             MatrixUtils.mat4.rotateZ(mMMatrix, mMMatrix, rz);
             MatrixUtils.mat4.multiply(mMVPMatrix, mVMatrix, mMMatrix);
             MatrixUtils.mat4.multiply(mMVPMatrix, mProjMatrix, mMVPMatrix);
-        }
-
-        function drawTest() {
-            shaderTest.use();
-
-            MatrixUtils.mat4.perspective(pMatrix, 45.0, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
-
-            MatrixUtils.mat4.identity(mvMatrixTest);
-
-            MatrixUtils.mat4.translate(mvMatrixTest, mvMatrixTest, [-1.5, 0.0, -5.4]);
-            gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
-            gl.enableVertexAttribArray(shaderTest.vertexPositionAttribute);
-            gl.vertexAttribPointer(shaderTest.vertexPositionAttribute, triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-            setMatrixUniforms();
-            gl.drawArrays(gl.TRIANGLES, 0, triangleVertexPositionBuffer.numItems);
-
-            MatrixUtils.mat4.translate(mvMatrixTest, mvMatrixTest, [3.0, 0.0, 0.0]);
-            gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
-            gl.vertexAttribPointer(shaderTest.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-            setMatrixUniforms();
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems);
         }
 
         function drawVignette(texture) {
@@ -352,10 +319,16 @@ define([
         $(function() {
             var canvas = document.getElementById('canvasGL');
 
+            $(canvas).show();
             window.gl = initGL(canvas);
 
-            loadData();
-            initShaders();
-            tick();
+            if (window.gl) {
+                loadData();
+                initShaders();
+                tick();
+            } else {
+                $(canvas).hide();
+                $('#alertError').show();
+            }
         });
     });
