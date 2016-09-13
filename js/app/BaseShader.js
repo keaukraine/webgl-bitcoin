@@ -14,7 +14,6 @@ define(function() {
         fillCode: function() {},
 
         getShader: function(gl, type, code) {
-            // shader = gl.createShader(gl.FRAGMENT_SHADER);
             var shader = gl.createShader(type);
 
             gl.shaderSource(shader, code);
@@ -28,9 +27,7 @@ define(function() {
             return shader;
         },
 
-        fillUniformsAttributes: function() {
-
-        },
+        fillUniformsAttributes: function() {},
 
         getUniform: function(uniform) {
             return gl.getUniformLocation(this.program, uniform);
