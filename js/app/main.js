@@ -1,9 +1,5 @@
-define([
-        'bitcoinRenderer'
-    ],
-    function(
-        BitcoinRenderer) {
-
+define(['bitcoinRenderer'],
+    function(BitcoinRenderer) {
         $(function() {
             var bitcoinRenderer = new BitcoinRenderer();
 
