@@ -10,8 +10,7 @@ define(['binaryDataLoader'], function(BinaryDataLoader) {
 
     FullModel.prototype = {
         load: function(url, callback) {
-            var root = this,
-                loader = new BinaryDataLoader();
+            var root = this;
 
             function loadBuffer(buffer, target, arrayBuffer) {
                 var byteArray = new Uint8Array(arrayBuffer, 0, arrayBuffer.byteLength);
@@ -19,7 +18,7 @@ define(['binaryDataLoader'], function(BinaryDataLoader) {
                 gl.bufferData(target, byteArray, gl.STATIC_DRAW);
             }
 
-            loader.load(url + '-indices.bin',
+            BinaryDataLoader.load(url + '-indices.bin',
                 function(data) {
                     root.bufferIndices = gl.createBuffer();
                     console.log('Loaded ' + url + '-indices.bin: ' + data.byteLength + ' bytes');
@@ -28,7 +27,7 @@ define(['binaryDataLoader'], function(BinaryDataLoader) {
                     root.bufferIndices && root.bufferStrides && callback();
                 }
             );
-            loader.load(url + '-strides.bin',
+            BinaryDataLoader.load(url + '-strides.bin',
                 function(data) {
                     root.bufferStrides = gl.createBuffer();
                     console.log('Loaded ' + url + '-strides.bin: ' + data.byteLength + ' bytes');

@@ -6,14 +6,13 @@ define(['binaryDataLoader'], function(BinaryDataLoader) {
 
     CompressedTextureLoader.loadETC1 = function(url, callback) {
         var root = this,
-            texture = gl.createTexture(),
-            loader = new BinaryDataLoader();
+            texture = gl.createTexture();
 
         var PKM_HEADER_SIZE = 16;
         var PKM_HEADER_WIDTH_OFFSET = 8;
         var PKM_HEADER_HEIGHT_OFFSET = 10;
 
-        loader.load(url, function(data) {
+        BinaryDataLoader.load(url, function(data) {
             var bufWidth, bufHeight, bufData,
                 width, height;
 
