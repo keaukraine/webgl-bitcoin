@@ -7,7 +7,8 @@ define([
         'utils/matrixUtils',
         'fullModel',
         'uncompressedTextureLoader',
-        'compressedTextureLoader'
+        'compressedTextureLoader',
+        'bitcoinRenderer'
     ],
     function(
         $,
@@ -18,7 +19,8 @@ define([
         MatrixUtils,
         FullModel,
         UncompressedTextureLoader,
-        CompressedTextureLoader) {
+        CompressedTextureLoader,
+        BitcoinRenderer) {
 
         var
             shaderSphericalMapLM, shaderDiffuse, shaderLMTable,
@@ -285,19 +287,8 @@ define([
             gl.drawElements(gl.TRIANGLES, model.getNumIndices() * 3, gl.UNSIGNED_SHORT, 0);
         }
 
-        window.requestAnimFrame = (function() {
-            return window.requestAnimationFrame ||
-                window.webkitRequestAnimationFrame ||
-                window.mozRequestAnimationFrame ||
-                window.oRequestAnimationFrame ||
-                window.msRequestAnimationFrame ||
-                function( /* function FrameRequestCallback */ callback, /* DOMElement Element */ element) {
-                    window.setTimeout(callback, 1000 / 60);
-                };
-        })();
-
         function tick() {
-            requestAnimFrame(tick);
+            requestAnimationFrame(tick);
             drawScene();
             animate();
         }
@@ -317,18 +308,22 @@ define([
         }
 
         $(function() {
-            var canvas = document.getElementById('canvasGL');
+            var bitcoinRenderer = new BitcoinRenderer();
 
-            $(canvas).show();
-            window.gl = initGL(canvas);
+            bitcoinRenderer.init('canvasGL');
 
-            if (window.gl) {
-                loadData();
-                initShaders();
-                tick();
-            } else {
-                $(canvas).hide();
-                $('#alertError').show();
-            }
+            // var canvas = document.getElementById('canvasGL');
+
+            // $(canvas).show();
+            // window.gl = initGL(canvas);
+
+            // if (window.gl) {
+            //     initShaders();
+            //     loadData();
+            //     tick();
+            // } else {
+            //     $(canvas).hide();
+            //     $('#alertError').show();
+            // }
         });
     });
