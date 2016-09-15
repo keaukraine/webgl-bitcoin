@@ -65,7 +65,7 @@ define([
         BaseRenderer.prototype.loadData = function() {}
 
         BaseRenderer.prototype.drawScene = function() {
-            gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         }
@@ -74,6 +74,7 @@ define([
 
         BaseRenderer.prototype.tick = function() {
             requestAnimationFrame(this.boundTick);
+            this.resizeCanvas();
             this.drawScene();
             this.animate();
         }
@@ -95,11 +96,10 @@ define([
         };
 
         BaseRenderer.prototype.init = function(canvasID) {
-            // var boundTick = this.tick.bind(this);
-
             this.onBeforeInit();
 
-            window.gl = this.initGL(document.getElementById(canvasID));
+            this.canvas = document.getElementById(canvasID);
+            window.gl = this.initGL(this.canvas);
 
             if (window.gl) {
                 this.initShaders();
@@ -107,6 +107,17 @@ define([
                 this.boundTick();
             } else {
                 this.onInitError();
+            }
+        }
+
+        BaseRenderer.prototype.resizeCanvas = function() {
+            var cssToRealPixels = window.devicePixelRatio || 1,
+                displayWidth = Math.floor(this.canvas.clientWidth * cssToRealPixels),
+                displayHeight = Math.floor(this.canvas.clientHeight * cssToRealPixels);
+
+            if (this.canvas.width != displayWidth || this.canvas.height != displayHeight) {
+                this.canvas.width = displayWidth;
+                this.canvas.height = displayHeight;
             }
         }
 

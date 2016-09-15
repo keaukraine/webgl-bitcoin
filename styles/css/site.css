@@ -1,2 +1,2 @@
-.canvasGL{display:inline-block}
+.canvasGL{display:inline-block;width:50vw;height:50vh}.canvasGL.fs{position:absolute;display:block;top:0;left:0;width:100vw;height:100vh}
 /*# sourceMappingURL=site.css.map */

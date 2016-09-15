@@ -9,7 +9,8 @@ define([
         'utils/matrixUtils',
         'fullModel',
         'uncompressedTextureLoader',
-        'compressedTextureLoader'
+        'compressedTextureLoader',
+        'utils/fullscreenUtils'
     ],
     function(
         BaseRenderer,
@@ -20,7 +21,8 @@ define([
         MatrixUtils,
         FullModel,
         UncompressedTextureLoader,
-        CompressedTextureLoader) {
+        CompressedTextureLoader,
+        FullScreenUtils) {
 
         class BitcoinRenderer extends BaseRenderer {
             constructor() {
@@ -49,11 +51,32 @@ define([
 
             onBeforeInit() {
                 super.onBeforeInit();
+
                 $('#canvasGL').show();
+
+                $('#canvasGL').on('dblclick', function(e) {
+                    var $this = $(this);
+
+                    if($this.hasClass('fs')) {
+                        FullScreenUtils.exitFullScreen()
+                    } else {
+                        FullScreenUtils.enterFullScreen()
+                    }
+                    FullScreenUtils.addFullScreenListener(function() {
+                        if(FullScreenUtils.isFullScreen()) {
+                            $this.addClass('fs');
+                        } else {
+                            $this.removeClass('fs');
+                        }
+                        // $this.removeClass('fs');
+                        // console.log('exit fs');
+                    });
+                });
             }
 
             onInitError() {
                 super.onInitError();
+
                 $(canvas).hide();
                 $('#alertError').show();
             }
@@ -126,13 +149,13 @@ define([
             setCameraFOV(multiplier) {
                 var ratio;
 
-                if (gl.viewportHeight > 0) {
-                    ratio = gl.viewportWidth / gl.viewportHeight;
+                if (gl.canvas.height > 0) {
+                    ratio = gl.canvas.width / gl.canvas.height;
                 } else {
                     ratio = 1.0;
                 }
 
-                if (gl.viewportWidth >= gl.viewportHeight) {
+                if (gl.canvas.width >= gl.canvas.height) {
                     this.setFOV(this.mProjMatrix, this.FOV_LANDSCAPE * multiplier, ratio, 20.0, 1000.0);
                 } else {
                     this.setFOV(this.mProjMatrix, this.FOV_PORTRAIT * multiplier, ratio, 20.0, 1000.0);
@@ -144,7 +167,7 @@ define([
                     return;
                 }
 
-                gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+                gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
                 gl.clearColor(0.0, 0.0, 0.0, 1.0);
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -227,7 +250,6 @@ define([
 
                 this.lastTime = timeNow;
             }
-
         }
 
         return BitcoinRenderer;

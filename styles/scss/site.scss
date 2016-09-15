@@ -2,4 +2,15 @@
 
 .canvasGL {
     display: inline-block;
+    width: 50vw;
+    height: 50vh;
+
+    &.fs {
+        position: absolute;
+        display: block;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+    }
 }
