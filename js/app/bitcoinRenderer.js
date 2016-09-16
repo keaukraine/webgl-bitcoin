@@ -54,22 +54,20 @@ define([
 
                 $('#canvasGL').show();
 
-                $('#canvasGL').on('dblclick', function(e) {
-                    var $this = $(this);
+                $('#toggleFullscreen').on('click', function(e) {
+                    var $body = $('body');
 
-                    if($this.hasClass('fs')) {
+                    if($body.hasClass('fs')) {
                         FullScreenUtils.exitFullScreen()
                     } else {
                         FullScreenUtils.enterFullScreen()
                     }
                     FullScreenUtils.addFullScreenListener(function() {
                         if(FullScreenUtils.isFullScreen()) {
-                            $this.addClass('fs');
+                            $body.addClass('fs');
                         } else {
-                            $this.removeClass('fs');
+                            $body.removeClass('fs');
                         }
-                        // $this.removeClass('fs');
-                        // console.log('exit fs');
                     });
                 });
             }
