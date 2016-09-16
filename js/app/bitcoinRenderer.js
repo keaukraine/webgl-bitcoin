@@ -9,8 +9,7 @@ define([
         'utils/matrixUtils',
         'fullModel',
         'uncompressedTextureLoader',
-        'compressedTextureLoader',
-        'utils/fullscreenUtils'
+        'compressedTextureLoader'
     ],
     function(
         BaseRenderer,
@@ -21,8 +20,7 @@ define([
         MatrixUtils,
         FullModel,
         UncompressedTextureLoader,
-        CompressedTextureLoader,
-        FullScreenUtils) {
+        CompressedTextureLoader) {
 
         class BitcoinRenderer extends BaseRenderer {
             constructor() {
@@ -49,27 +47,15 @@ define([
                 this.YAW_COEFF_NORMAL = 150.0;
             }
 
+            resetLoaded() {
+                this.loaded = false;
+                this.loadedItemsCount = 0;
+            }
+
             onBeforeInit() {
                 super.onBeforeInit();
 
                 $('#canvasGL').show();
-
-                $('#toggleFullscreen').on('click', function(e) {
-                    var $body = $('body');
-
-                    if($body.hasClass('fs')) {
-                        FullScreenUtils.exitFullScreen()
-                    } else {
-                        FullScreenUtils.enterFullScreen()
-                    }
-                    FullScreenUtils.addFullScreenListener(function() {
-                        if(FullScreenUtils.isFullScreen()) {
-                            $body.addClass('fs');
-                        } else {
-                            $body.removeClass('fs');
-                        }
-                    });
-                });
             }
 
             onInitError() {
@@ -100,6 +86,7 @@ define([
                     this.loaded = true;
                     console.log('Loaded all assets');
                     $('#row-progress').hide();
+                    $('.control-icon').show();
                 }
             }
 

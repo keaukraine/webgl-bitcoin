@@ -1,5 +1,9 @@
 @import "common";
 
+body {
+    background-color: #ccc;
+}
+
 .canvasGL {
     display: block;
     width: 100vw;
@@ -27,17 +31,40 @@
     right: 0;
     margin: 20px;
     padding: 20px;
+    padding-top: 60px;
+    opacity: 0.88;
+
+    @media(min-width: $screen-sm-min) {
+        padding-top: 20px;
+    }
 
     .fs & {
         padding: 0;
+        padding-top: 60px;
+
+        @media(min-width: $screen-sm-min) {
+            padding-top: 0;
+        }
     }
+
+    label {
+        color: #fff;
+        text-shadow: rgb(3, 3, 3) 0px 0px 8px;
+    }
+}
+
+.control-icon {
+    position: absolute;
 
     .material-icons {
         color: #fff;
         text-shadow: rgb(3, 3, 3) 0px 0px 8px;
     }
 
-    .control-fs {
+    &.control-fs {
+        right: 40px;
+        top: 40px;
+
         .icon-enter-fs {
             display: inline-block;
         }
@@ -47,11 +74,42 @@
         }
 
         .fs & {
+            right: 20px;
+            top: 20px;
+
             .icon-enter-fs {
                 display: none;
             }
 
             .icon-exit-fs {
+                display: inline-block;
+            }
+        }
+    }
+
+    &.control-settings {
+        left: 40px;
+        top: 40px;
+
+        .icon-show-settings {
+            display: inline-block;
+        }
+
+        .icon-hide-settings {
+            display: none;
+        }
+
+        .fs & {
+            left: 20px;
+            top: 20px;
+        }
+
+        &.open {
+            .icon-show-settings {
+                display: none;
+            }
+
+            .icon-hide-settings {
                 display: inline-block;
             }
         }

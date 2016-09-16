@@ -34,10 +34,10 @@ define(['binaryDataLoader'], function(BinaryDataLoader) {
                 gl.bindTexture(gl.TEXTURE_2D, null);
 
                 console.log('Loaded texture ' + url + ' [' + width + 'x' + height + ']');
+
+                callback && callback();
             }
         });
-
-        callback && callback();
 
         return texture;
     }
