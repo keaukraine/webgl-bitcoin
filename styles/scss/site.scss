@@ -36,6 +36,7 @@ body {
 
     @media(min-width: $screen-sm-min) {
         padding-top: 20px;
+        padding-left: 50px;
     }
 
     .fs & {
@@ -44,6 +45,7 @@ body {
 
         @media(min-width: $screen-sm-min) {
             padding-top: 0;
+            padding-left: 30px;
         }
     }
 
