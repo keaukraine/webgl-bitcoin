@@ -64,5 +64,9 @@ define(function() {
         }
     }
 
+    FullScreenUtils.isFullScreenSupported = function() {
+        return !!document.documentElement.requestFullscreen || !!document.documentElement.webkitRequestFullScreen || !!document.documentElement.mozRequestFullScreen;
+    }
+
     return FullScreenUtils;
 });

@@ -23,7 +23,7 @@ define([
 
             window.gl = null;
 
-            if(bitcoinRenderer) {
+            if (bitcoinRenderer) {
                 bitcoinRenderer.resetLoaded();
                 oldYaw = bitcoinRenderer.angleYaw;
             }
@@ -42,22 +42,27 @@ define([
         $(function() {
             initRenderer();
 
-            $('#toggleFullscreen').on('click', function(e) {
-                var $body = $('body');
 
-                if ($body.hasClass('fs')) {
-                    FullScreenUtils.exitFullScreen();
-                } else {
-                    FullScreenUtils.enterFullScreen();
-                }
-                FullScreenUtils.addFullScreenListener(function() {
-                    if (FullScreenUtils.isFullScreen()) {
-                        $body.addClass('fs');
+            if (FullScreenUtils.isFullScreenSupported()) {
+                $('#toggleFullscreen').on('click', function(e) {
+                    var $body = $('body');
+
+                    if ($body.hasClass('fs')) {
+                        FullScreenUtils.exitFullScreen();
                     } else {
-                        $body.removeClass('fs');
+                        FullScreenUtils.enterFullScreen();
                     }
+                    FullScreenUtils.addFullScreenListener(function() {
+                        if (FullScreenUtils.isFullScreen()) {
+                            $body.addClass('fs');
+                        } else {
+                            $body.removeClass('fs');
+                        }
+                    });
                 });
-            });
+            } else {
+                $('#toggleFullscreen').addClass('hidden');
+            }
 
             $('#toggleSettings').on('click', function(e) {
                 var $this = $(this),
