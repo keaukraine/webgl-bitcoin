@@ -1,19 +1,20 @@
 'use strict';
 
 define(function() {
-    function BaseShader() {
-        this.fillCode();
-        this.initShader();
-    }
 
-    BaseShader.prototype = {
-        vertexShaderCode: '',
-        fragmentShaderCode: '',
-        program: null,
+    class BaseShader {
+        constructor() {
+            this.vertexShaderCode =  '';
+            this.fragmentShaderCode = '';
+            this.program = null;
 
-        fillCode: function() {},
+            this.fillCode();
+            this.initShader();
+        }
 
-        getShader: function(gl, type, code) {
+        fillCode() {}
+
+        getShader(gl, type, code) {
             var shader = gl.createShader(type);
 
             gl.shaderSource(shader, code);
@@ -25,19 +26,19 @@ define(function() {
             }
 
             return shader;
-        },
+        }
 
-        fillUniformsAttributes: function() {},
+        fillUniformsAttributes() {}
 
-        getUniform: function(uniform) {
+        getUniform(uniform) {
             return gl.getUniformLocation(this.program, uniform);
-        },
+        }
 
-        getAttrib: function(attrib) {
+        getAttrib(attrib) {
             return gl.getAttribLocation(this.program, attrib);
-        },
+        }
 
-        initShader: function() {
+        initShader() {
             var shaderProgram,
                 fragmentShader = this.getShader(gl, gl.FRAGMENT_SHADER, this.fragmentShaderCode),
                 vertexShader = this.getShader(gl, gl.VERTEX_SHADER, this.vertexShaderCode);
@@ -57,15 +58,15 @@ define(function() {
             this.program = shaderProgram;
 
             this.fillUniformsAttributes();
-        },
+        }
 
-        use: function() {
+        use() {
             if (this.program) {
                 gl.useProgram(this.program);
             }
-        },
+        }
 
-        delete: function() {
+        deleteProgram() {
             gl.deleteProgram(this.program);
         }
     };
