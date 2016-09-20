@@ -1,7 +1,7 @@
 'use strict';
 
 define([
-        'utils/matrixUtils'
+        'utils/MatrixUtils'
     ],
     function(MatrixUtils) {
 

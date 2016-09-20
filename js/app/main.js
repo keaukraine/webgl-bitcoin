@@ -1,9 +1,9 @@
 'use strict';
 
 define([
-        'bitcoinRenderer',
+        'BitcoinRenderer',
         'jquery',
-        'utils/fullscreenUtils'
+        'utils/FullscreenUtils'
     ],
     function(
         BitcoinRenderer,

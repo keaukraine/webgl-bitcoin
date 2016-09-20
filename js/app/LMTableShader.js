@@ -1,6 +1,6 @@
 'use strict';
 
-define(['baseShader'], function(BaseShader) {
+define(['BaseShader'], function(BaseShader) {
 
     class LMTableShader extends BaseShader {
         fillCode() {

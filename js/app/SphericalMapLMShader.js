@@ -1,6 +1,6 @@
 'use strict';
 
-define(['baseShader'], function(BaseShader) {
+define(['BaseShader'], function(BaseShader) {
 
     class SphericalMapLMShader extends BaseShader {
         fillCode() {

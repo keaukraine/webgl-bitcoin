@@ -1,15 +1,15 @@
 'use strict';
 
 define([
-        'baseRenderer',
+        'BaseRenderer',
         'jquery',
-        'diffuseShader',
-        'sphericalMapLMShader',
-        'lMTableShader',
-        'utils/matrixUtils',
-        'fullModel',
-        'uncompressedTextureLoader',
-        'compressedTextureLoader'
+        'DiffuseShader',
+        'SphericalMapLMShader',
+        'LMTableShader',
+        'utils/MatrixUtils',
+        'FullModel',
+        'UncompressedTextureLoader',
+        'CompressedTextureLoader'
     ],
     function(
         BaseRenderer,

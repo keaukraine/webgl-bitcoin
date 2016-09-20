@@ -1,6 +1,6 @@
 'use strict';
 
-define(['baseShader'], function(BaseShader) {
+define(['BaseShader'], function(BaseShader) {
     class DiffuseShader extends BaseShader {
         fillCode() {
             this.vertexShaderCode = 'uniform mat4 view_proj_matrix;\n' +

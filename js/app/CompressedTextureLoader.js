@@ -1,6 +1,6 @@
 'use strict';
 
-define(['binaryDataLoader'], function(BinaryDataLoader) {
+define(['BinaryDataLoader'], function(BinaryDataLoader) {
 
     function CompressedTextureLoader() {}
 
