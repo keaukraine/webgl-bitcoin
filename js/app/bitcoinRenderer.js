@@ -163,8 +163,8 @@ define([
                 this.positionCamera(0.0);
                 this.setCameraFOV(1.0);
 
-                this.drawTable();
                 this.drawCoins();
+                this.drawTable();
             }
 
             drawTable() {
