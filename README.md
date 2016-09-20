@@ -2,6 +2,8 @@
 
 This demo is a WebGL port of Android live wallpaper *[Bitcoins 3D Live Wallpaper](https://play.google.com/store/apps/details?id=org.androidworks.livewallpaperbitcoins)*.
 
+Live demo page is available here: https://keaukraine.github.io/webgl-bitcoin/
+
 Works in latest Chrome, Firefox, Safari and Edge.
 
 #Used Libraries
