@@ -5,6 +5,9 @@ define([
     ],
     function(MatrixUtils) {
 
+        /**
+         * Constructor
+         */
         function BaseRenderer() {
             this.mMMatrix = MatrixUtils.mat4.create();
             this.mVMatrix = MatrixUtils.mat4.create();
@@ -17,6 +20,9 @@ define([
             this.boundTick = this.tick.bind(this);
         }
 
+        /**
+         * Logs last GL error to console
+         */
         BaseRenderer.prototype.logGLError = function() {
             var err = gl.getError();
             if (err !== gl.NO_ERROR) {
@@ -24,18 +30,38 @@ define([
             }
         }
 
+        /**
+         * Binds 2D texture.
+         * @param {number} textureUnit - texture unit to a
+         * @param {number} textureID - texture to be used
+         * @param {number} uniformID - shader's uniform ID
+         */
         BaseRenderer.prototype.setTexture2D = function(textureUnit, textureID, uniformID) {
             gl.activeTexture(gl.TEXTURE0 + textureUnit);
             gl.bindTexture(gl.TEXTURE_2D, textureID);
             gl.uniform1i(uniformID, textureUnit);
         }
 
+        /**
+         * Binds cubemap texture.
+         * @param {number} textureUnit - texture unit to a
+         * @param {number} textureID - texture to be used
+         * @param {number} uniformID - shader's uniform ID
+         */
         BaseRenderer.prototype.setTextureCubemap = function(textureUnit, textureID, uniformID) {
             gl.ActiveTexture(gl.TEXTURE0 + textureUnit);
             gl.BindTexture(gl.TEXTURE_CUBE_MAP, textureID);
             gl.Uniform1i(uniformID, textureUnit);
         }
 
+        /**
+         * Calculates FOV for matrix.
+         * @param {Mat4} matrix - output matrix
+         * @param {number} fovY - vertical FOV in degrees
+         * @param {number} aspect - aspect ratio of viewport
+         * @param {number} zNear - near clipping plane distance
+         * @param {number} zFar - far clipping plane distance
+         */
         BaseRenderer.prototype.setFOV = function(matrix, fovY, aspect, zNear, zFar) {
             var fW, fH;
 
@@ -44,6 +70,9 @@ define([
             MatrixUtils.mat4.frustum(matrix, -fW, fW, -fH, fH, zNear, zFar);
         }
 
+        /**
+         * Calculates MVP matrix. Saved in this.mMVPMatrix
+         */
         BaseRenderer.prototype.calculateMVPMatrix = function(tx, ty, tz, rx, ry, rz, sx, sy, sz) {
             MatrixUtils.mat4.identity(this.mMMatrix);
             MatrixUtils.mat4.rotate(this.mMMatrix, this.mMMatrix, 0, [1, 0, 0]);
@@ -56,22 +85,43 @@ define([
             MatrixUtils.mat4.multiply(this.mMVPMatrix, this.mProjMatrix, this.mMVPMatrix);
         }
 
+        /**
+         * Called before WebGL initialization
+         */
         BaseRenderer.prototype.onBeforeInit = function() {}
 
+        /**
+         * Called on WebGL initialization error
+         */
         BaseRenderer.prototype.onInitError = function() {}
 
+        /**
+         * Shaders initialization code goes here
+         */
         BaseRenderer.prototype.initShaders = function() {}
 
+        /**
+         * Load WebGL data here
+         */
         BaseRenderer.prototype.loadData = function() {}
 
+        /**
+         * Perform each frame's draw calls here
+         */
         BaseRenderer.prototype.drawScene = function() {
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         }
 
+        /**
+         * Update timers and aminate stuff here
+         */
         BaseRenderer.prototype.animate = function() {}
 
+        /**
+         * Called on each frame
+         */
         BaseRenderer.prototype.tick = function() {
             requestAnimationFrame(this.boundTick);
             this.resizeCanvas();
@@ -79,6 +129,10 @@ define([
             this.animate();
         }
 
+        /**
+         * Initializes WebGL context
+         * @param {HTMLElement} canvas - canvas to initialize WebGL
+         */
         BaseRenderer.prototype.initGL = function(canvas) {
             var gl = null;
 
@@ -95,6 +149,10 @@ define([
             return gl;
         };
 
+        /**
+         * Initializes WebGL and calls all callbacks. Assigns current WebGL context to global window.gl
+         * @param {String} canvasID - ID of canvas element to initialize WebGL
+         */
         BaseRenderer.prototype.init = function(canvasID) {
             this.onBeforeInit();
 
@@ -110,6 +168,9 @@ define([
             }
         }
 
+        /**
+         * Adjusts viewport according to resizing of canvas
+         */
         BaseRenderer.prototype.resizeCanvas = function() {
             var cssToRealPixels = window.devicePixelRatio || 1,
                 displayWidth = Math.floor(this.canvas.clientWidth * cssToRealPixels),

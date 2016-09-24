@@ -18,6 +18,9 @@ define([
             'table': 'marble' // 'granite', 'marble', 'wood3'
         };
 
+        /**
+         * Initialize renderer with current scene configuration
+         */
         function initRenderer() {
             var oldYaw = 0;
 
@@ -42,7 +45,7 @@ define([
         $(function() {
             initRenderer();
 
-
+            // initialize fullscreen if supported
             if (FullScreenUtils.isFullScreenSupported()) {
                 $('#toggleFullscreen').on('click', function(e) {
                     var $body = $('body');
@@ -64,6 +67,7 @@ define([
                 $('#toggleFullscreen').addClass('hidden');
             }
 
+            // toggle settings visibility
             $('#toggleSettings').on('click', function(e) {
                 var $this = $(this),
                     $controls = $('#row-settings');
@@ -72,6 +76,7 @@ define([
                 $controls.toggle();
             });
 
+            // update scene configuration and re-init renderer
             $('#row-settings .btn').on('click', function() {
                 var $this = $(this),
                     option = $this.data('option'),

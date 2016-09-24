@@ -2,8 +2,17 @@
 
 define(['BinaryDataLoader'], function(BinaryDataLoader) {
 
+    /**
+     * Constructor. No need to create an instance of this class because it has only static methods
+     */
     function CompressedTextureLoader() {}
 
+    /**
+     * Loads ETC1 texture from PKM format
+     * @param  {string} url - URL to texture in PKM format
+     * @param  {Function} callbak - callback called after texture is loaded to GPU
+     * @return {number} - WebGL texture
+     */
     CompressedTextureLoader.loadETC1 = function(url, callback) {
         var root = this,
             texture = gl.createTexture();

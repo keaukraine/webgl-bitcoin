@@ -2,8 +2,17 @@
 
 define(function() {
 
+    /**
+     * Constructor. No need to create an instance of this class because it has only static methods
+     */
     function UncompressedTextureLoader() {}
 
+    /**
+     * Loads texture from any image format supported by browser
+     * @param  {string} url - URL to texture
+     * @param  {Function} callbak - callback called after texture is loaded to GPU
+     * @return {number} - WebGL texture
+     */
     UncompressedTextureLoader.load = function(url, callback) {
             var texture = gl.createTexture();
 

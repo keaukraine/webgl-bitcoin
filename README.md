@@ -13,6 +13,7 @@ Works in latest Chrome, Firefox, Safari and Edge.
 * RequireJS, Released under the  MIT license https://github.com/requirejs/requirejs/blob/master/LICENSE
 * jQuery used under the MIT license https://jquery.org/license/
 * gl-matrix, a high performance matrix and vector operations by Brandon Jones and Colin MacKenzie IV 
+* WebGL initialization code based on http://learningwebgl.com/ tutorials
 
 #License
 

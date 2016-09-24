@@ -1,6 +1,10 @@
 'use strict';
 
 define(['BaseShader'], function(BaseShader) {
+
+    /**
+     * Test shader from WebGL tutorial at http://learningwebgl.com/
+     */
     class TestShader extends BaseShader {
         fillCode() {
             this.vertexShaderCode = '\

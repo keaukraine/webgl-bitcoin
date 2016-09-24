@@ -2,6 +2,10 @@
 
 define(['BaseShader'], function(BaseShader) {
 
+    /**
+     * Shader for table. Uses diffuse and lightmap textures.
+     * @class
+     */
     class LMTableShader extends BaseShader {
         fillCode() {
             this.vertexShaderCode = 'uniform mat4 view_proj_matrix;\n' +

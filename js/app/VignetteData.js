@@ -2,6 +2,10 @@
 
 define(function() {
 
+    /**
+     * Helper class to render billboard taking whole screen.
+     * @class
+     */
     function VignetteData() {
         this.quadTriangles = [
             // X, Y, Z, U, V

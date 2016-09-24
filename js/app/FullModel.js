@@ -2,6 +2,10 @@
 
 define(['BinaryDataLoader'], function(BinaryDataLoader) {
 
+    /**
+     * Class to represent mesh data
+     * @class
+     */
     function FullModel() {
         this.bufferIndices = null;
         this.bufferStrides = null;
@@ -9,6 +13,12 @@ define(['BinaryDataLoader'], function(BinaryDataLoader) {
     }
 
     FullModel.prototype = {
+
+        /**
+         * Loads binary data for mesh
+         * @param  {string} url - URL for mesh files without trailing "-*.bin"
+         * @param  {Function} callback when data is loaded
+         */
         load: function(url, callback) {
             var root = this;
 
@@ -37,11 +47,18 @@ define(['BinaryDataLoader'], function(BinaryDataLoader) {
             );
         },
 
+        /**
+         * Binds buffers for glDrawElements() call
+         */
         bindBuffers: function() {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.bufferStrides);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.bufferIndices);
         },
 
+        /**
+         * Returns number of inices in model
+         * @return {number} - number of indices
+         */
         getNumIndices: function() {
             return this.numIndices;
         }

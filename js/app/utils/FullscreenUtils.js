@@ -1,9 +1,17 @@
+/**
+ * @fileOverview Cross-browser full-screen utilities
+ * @author Oleksandr Popov
+ */
+
 'use strict';
 
 define(function() {
 
     function FullScreenUtils() {}
 
+    /**
+     * Enters fullscreen
+     */
     FullScreenUtils.enterFullScreen = function() {
         if (document.documentElement.requestFullscreen) {
             if (!document.fullscreenElement) {
@@ -22,6 +30,9 @@ define(function() {
         }
     }
 
+    /**
+     * Exits fullscreen
+     */
     FullScreenUtils.exitFullScreen = function() {
         if (document.documentElement.requestFullscreen) {
             if (document.exitFullscreen) {
@@ -40,6 +51,10 @@ define(function() {
         }
     }
 
+    /**
+     * Adds cross-browser fullscreenchange event
+     * @param {function} exitHandler - function to be called on fullscreenchange event
+     */
     FullScreenUtils.addFullScreenListener = function(exitHandler) {
         if (document.documentElement.requestFullscreen) {
             document.addEventListener('fullscreenchange', exitHandler, false);
@@ -52,6 +67,10 @@ define(function() {
         }
     }
 
+    /**
+     * Checks fullscreen state
+     * @return {Boolean} - true if fullscreen is active, false if not
+     */
     FullScreenUtils.isFullScreen = function() {
         if (document.documentElement.requestFullscreen) {
             return !!document.fullscreenElement;
@@ -64,6 +83,10 @@ define(function() {
         }
     }
 
+    /**
+     * Checks for full-screen API availability
+     * @return {Boolean} - true if fullscrees is supported, false if not
+     */
     FullScreenUtils.isFullScreenSupported = function() {
         return !!document.documentElement.requestFullscreen || !!document.documentElement.webkitRequestFullScreen || !!document.documentElement.mozRequestFullScreen;
     }

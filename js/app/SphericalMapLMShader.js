@@ -2,6 +2,9 @@
 
 define(['BaseShader'], function(BaseShader) {
 
+    /**
+     * Sahder to render coins. Uses spherical map for reflection and diffuse, normal and light maps.
+     */
     class SphericalMapLMShader extends BaseShader {
         fillCode() {
             this.vertexShaderCode = 'precision highp float;\r\n' +
