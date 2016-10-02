@@ -26,27 +26,30 @@ define([
             constructor() {
                 super();
 
-                this.loadedItemsCount = 0;
-                this.loaded = false;
+                this.loadedItemsCount = 0; // couter of loaded OpenGL buffers+textures
+                this.loaded = false; // won't draw until this is true
 
-                this.angleYaw = 0;
-                this.lastTime = 0;
+                this.angleYaw = 0; // camera rotation angle
+                this.lastTime = 0; // used for animating camera
 
-                this.coinModelType = '1'; // 1, 2, 3
-                this.coinNormalType = '1'; // 1, 2, 3
-                this.coinSphericalMap = 'gold2'; // 'bronze', 'gold2', 'silver'
-                this.tableTextureType = 'marble'; // 'granite', 'marble', 'wood3'
+                this.coinModelType = '1'; // coin mesh: 1, 2, 3
+                this.coinNormalType = '1'; // coin normal texture: 1, 2, 3
+                this.coinSphericalMap = 'gold2'; // coin spherical map texture: 'bronze', 'gold2', 'silver'
+                this.tableTextureType = 'marble'; // floor texture: 'granite', 'marble', 'wood3'
 
-                this.ITEMS_TO_LOAD = 7;
-                this.FLOAT_SIZE_BYTES = 4;
+                this.ITEMS_TO_LOAD = 7; // total number of OpenGL buffers+textures to load
+                this.FLOAT_SIZE_BYTES = 4; // float size, used to calculate stride sizes
                 this.TRIANGLE_VERTICES_DATA_STRIDE_BYTES = 5 * this.FLOAT_SIZE_BYTES;
                 this.TRIANGLE_VERTICES_DATA_POS_OFFSET = 0;
                 this.TRIANGLE_VERTICES_DATA_UV_OFFSET = 3;
-                this.FOV_LANDSCAPE = 25.0;
-                this.FOV_PORTRAIT = 40.0;
-                this.YAW_COEFF_NORMAL = 150.0;
+                this.FOV_LANDSCAPE = 25.0; // FOV for landscape
+                this.FOV_PORTRAIT = 40.0; // FOV for portrait
+                this.YAW_COEFF_NORMAL = 150.0; // camera rotation speed
             }
 
+            /**
+             * Resets loaded state for renderer
+             */
             resetLoaded() {
                 this.loaded = false;
                 this.loadedItemsCount = 0;
@@ -66,30 +69,35 @@ define([
             }
 
             initShaders() {
-                this.shaderDiffuse = new DiffuseShader();
                 this.shaderSphericalMapLM = new SphericalMapLMShader();
                 this.shaderLMTable = new LMTableShader();
             }
 
+            /**
+             * Callback for all loading function. Updates loading progress and allows rendering after loading all stuff
+             */
             updateLoadedObjectsCount() {
                 var percent,
                     $progress = $('#progressLoading');
 
-                this.loadedItemsCount++;
+                this.loadedItemsCount++; // increase loaded objects counter
 
                 percent = Math.floor(this.loadedItemsCount * 100 / this.ITEMS_TO_LOAD) + '%';
                 $progress
                     .css('width', percent)
-                    .html(percent);
+                    .html(percent); // update loading progress
 
                 if (this.loadedItemsCount >= this.ITEMS_TO_LOAD) {
-                    this.loaded = true;
+                    this.loaded = true; // allow rendering
                     console.log('Loaded all assets');
                     $('#row-progress').hide();
                     $('.control-icon').show();
                 }
             }
 
+            /**
+             * loads all WebGL buffers and textures. Uses updateLoadedObjectsCount() callback to indicate that data is loaded to GPU
+             */
             loadData() {
                 var boundUpdateCallback = this.updateLoadedObjectsCount.bind(this);
 
@@ -105,6 +113,10 @@ define([
                 this.modelCoins.load('data/models/coins' + this.coinModelType, boundUpdateCallback);
             }
 
+            /**
+             * Loads either ETC1 from PKM or falls back to loading PNG
+             * @param {string} url - URL to texture without extension
+             */
             loadETC1WithFallback(url) {
                 var boundUpdateCallback = this.updateLoadedObjectsCount.bind(this);
 
@@ -115,6 +127,10 @@ define([
                 }
             }
 
+            /**
+             * Calculates camera matrix
+             * @param {unmber} a - position in [0...1] range
+             */
             positionCamera(a) {
                 var x, y, z,
                     sina, cosa;
@@ -131,6 +147,9 @@ define([
                 MatrixUtils.mat4.lookAt(this.mVMatrix, [x, y, z], [0, 0, 0], [0, 0, 1]);
             }
 
+            /**
+             * Calculates projection matrix
+             */
             setCameraFOV(multiplier) {
                 var ratio;
 
@@ -147,6 +166,9 @@ define([
                 }
             }
 
+            /**
+             * Issues actual draw calls
+             */
             drawScene() {
                 if (!this.loaded) {
                     return;
@@ -222,6 +244,9 @@ define([
                 gl.drawElements(gl.TRIANGLES, model.getNumIndices() * 3, gl.UNSIGNED_SHORT, 0);
             }
 
+            /**
+             * Updates camera rotation
+             */
             animate() {
                 var timeNow = new Date().getTime(),
                     elapsed;

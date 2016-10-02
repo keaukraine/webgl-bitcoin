@@ -17,9 +17,9 @@ define(['BinaryDataLoader'], function(BinaryDataLoader) {
         var root = this,
             texture = gl.createTexture();
 
-        var PKM_HEADER_SIZE = 16;
-        var PKM_HEADER_WIDTH_OFFSET = 8;
-        var PKM_HEADER_HEIGHT_OFFSET = 10;
+        var PKM_HEADER_SIZE = 16; // size of PKM header
+        var PKM_HEADER_WIDTH_OFFSET = 8; // offset to texture width
+        var PKM_HEADER_HEIGHT_OFFSET = 10; // offset to texture height
 
         BinaryDataLoader.load(url, function(data) {
             var bufWidth, bufHeight, bufData,
