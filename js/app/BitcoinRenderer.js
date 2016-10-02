@@ -3,7 +3,6 @@
 define([
         'BaseRenderer',
         'jquery',
-        'DiffuseShader',
         'SphericalMapLMShader',
         'LMTableShader',
         'utils/MatrixUtils',
@@ -14,7 +13,6 @@ define([
     function(
         BaseRenderer,
         $,
-        DiffuseShader,
         SphericalMapLMShader,
         LMTableShader,
         MatrixUtils,
