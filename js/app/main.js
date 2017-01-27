@@ -3,7 +3,7 @@
 define([
         'BitcoinRenderer',
         'jquery',
-        'utils/FullscreenUtils'
+        'framework/utils/FullscreenUtils'
     ],
     function(
         BitcoinRenderer,

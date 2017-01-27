@@ -1,6 +1,6 @@
 'use strict';
 
-define(['BaseShader'], function(BaseShader) {
+define(['framework/BaseShader'], function(BaseShader) {
 
     /**
      * Sahder to render coins. Uses spherical map for reflection and diffuse, normal and light maps.

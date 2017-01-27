@@ -1,6 +1,6 @@
 'use strict';
 
-define(['BaseShader'], function(BaseShader) {
+define(['framework/BaseShader'], function(BaseShader) {
 
     /**
      * Shader for table. Uses diffuse and lightmap textures.

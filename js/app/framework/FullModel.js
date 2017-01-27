@@ -1,6 +1,6 @@
 'use strict';
 
-define(['BinaryDataLoader'], function(BinaryDataLoader) {
+define(['./BinaryDataLoader'], function(BinaryDataLoader) {
 
     /**
      * Class to represent mesh data

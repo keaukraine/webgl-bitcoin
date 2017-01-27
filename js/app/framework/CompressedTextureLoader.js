@@ -1,6 +1,6 @@
 'use strict';
 
-define(['BinaryDataLoader'], function(BinaryDataLoader) {
+define(['./BinaryDataLoader'], function(BinaryDataLoader) {
 
     /**
      * Constructor. No need to create an instance of this class because it has only static methods

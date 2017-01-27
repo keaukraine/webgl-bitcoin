@@ -1,6 +1,6 @@
 'use strict';
 
-define(['BaseShader'], function(BaseShader) {
+define(['framework/BaseShader'], function(BaseShader) {
 
     /**
      * Simple diffuse shader.
